@@ -4,6 +4,37 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
+
+# ── SHARED SIDEBAR (injected on every page) ───────────────────────────────────
+st.markdown("""
+<style>
+[data-testid="stSidebarNav"] { display: none !important; }
+[data-testid="stSidebar"] { background: #0f172a; }
+[data-testid="stSidebar"] * { color: #e2e8f0 !important; }
+[data-testid="stSidebar"] hr { border-color: #1e293b !important; }
+[data-testid="stSidebar"] a { color: #93c5fd !important; }
+.sidebar-brand { font-size:20px; font-weight:800; color:#ffffff !important; letter-spacing:-0.5px; margin-bottom:2px; }
+.sidebar-sub   { font-size:11px; color:#64748b !important; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:16px; }
+.nav-label     { font-size:10px; font-weight:700; color:#475569 !important; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
+</style>
+""", unsafe_allow_html=True)
+
+with st.sidebar:
+    st.markdown('<div class="sidebar-brand">🛒 Five Below</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-sub">Data &amp; AI Strategy</div>', unsafe_allow_html=True)
+    st.divider()
+    st.markdown('<div class="nav-label">Tools</div>', unsafe_allow_html=True)
+    st.page_link("app.py",                                 label="🏠  Home & Strategy Overview")
+    st.page_link("pages/1_🤖_AI_Prioritization.py",       label="🤖  AI Use Case Prioritization")
+    st.page_link("pages/2_🏛️_Data_Quality_Dashboard.py",  label="🏛️  Data Quality Dashboard")
+    st.page_link("pages/3_🛍️_UCP_Scorecard.py",           label="🛍️  UCP Readiness Scorecard")
+    st.divider()
+    st.markdown('<div class="nav-label">About</div>', unsafe_allow_html=True)
+    st.markdown("**Kiran Thella**  \nAI Product Manager  \n13+ yrs · Nike · Gilead · eBay")
+    st.markdown("")
+    st.markdown("[🔗 LinkedIn](https://www.linkedin.com/in/kiranthella/)   [💻 GitHub](https://github.com/KKThella)")
+
+
 # ── PAGE CONFIG ───────────────────────────────────────────────────────────────
 # ── STYLES ────────────────────────────────────────────────────────────────────
 st.markdown("""

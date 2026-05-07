@@ -4,14 +4,38 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
-# ── PAGE CONFIG ───────────────────────────────────────────────────────────────
-st.set_page_config(
-    page_title="UCP Readiness Scorecard",
-    page_icon="🛍️",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
 
+# ── SHARED SIDEBAR (injected on every page) ───────────────────────────────────
+st.markdown("""
+<style>
+[data-testid="stSidebarNav"] { display: none !important; }
+[data-testid="stSidebar"] { background: #0f172a; }
+[data-testid="stSidebar"] * { color: #e2e8f0 !important; }
+[data-testid="stSidebar"] hr { border-color: #1e293b !important; }
+[data-testid="stSidebar"] a { color: #93c5fd !important; }
+.sidebar-brand { font-size:20px; font-weight:800; color:#ffffff !important; letter-spacing:-0.5px; margin-bottom:2px; }
+.sidebar-sub   { font-size:11px; color:#64748b !important; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:16px; }
+.nav-label     { font-size:10px; font-weight:700; color:#475569 !important; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
+</style>
+""", unsafe_allow_html=True)
+
+with st.sidebar:
+    st.markdown('<div class="sidebar-brand">🛒 Five Below</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-sub">Data &amp; AI Strategy</div>', unsafe_allow_html=True)
+    st.divider()
+    st.markdown('<div class="nav-label">Tools</div>', unsafe_allow_html=True)
+    st.page_link("app.py",                                 label="🏠  Home & Strategy Overview")
+    st.page_link("pages/1_🤖_AI_Prioritization.py",       label="🤖  AI Use Case Prioritization")
+    st.page_link("pages/2_🏛️_Data_Quality_Dashboard.py",  label="🏛️  Data Quality Dashboard")
+    st.page_link("pages/3_🛍️_UCP_Scorecard.py",           label="🛍️  UCP Readiness Scorecard")
+    st.divider()
+    st.markdown('<div class="nav-label">About</div>', unsafe_allow_html=True)
+    st.markdown("**Kiran Thella**  \nAI Product Manager  \n13+ yrs · Nike · Gilead · eBay")
+    st.markdown("")
+    st.markdown("[🔗 LinkedIn](https://www.linkedin.com/in/kiranthella/)   [💻 GitHub](https://github.com/KKThella)")
+
+
+# ── PAGE CONFIG ───────────────────────────────────────────────────────────────
 # ── STYLES ────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -849,34 +873,79 @@ with tab4:
 
     comp_df = pd.DataFrame(comp_data)
 
-    fig_comp = px.scatter(
-        comp_df,
-        x="catalog_completeness",
-        y="ucp_score",
-        color="status",
-        size=[30, 30, 20, 20, 25, 25],
-        text="retailer",
-        color_discrete_map={
-            "Live on UCP": "#10b981",
-            "Not started": "#ef4444",
-            "Evaluating": "#f59e0b",
-            "Target": "#3b82f6",
-        },
-        title="UCP Score vs. Catalog Completeness by Retailer",
-        labels={"catalog_completeness": "Catalog Completeness (%)", "ucp_score": "UCP Readiness Score"},
-        height=420,
-    )
-    fig_comp.update_traces(textposition="top center", marker=dict(opacity=0.85))
+    # Jitter overlapping points slightly so labels don't collide
+    jitter_map = {
+        "Walmart":                    (0,   0),
+        "Target":                     (0,  -4),
+        "Dollar Tree":                (0,   0),
+        "Dollar General":             (0,   0),
+        "Five Below (current)":       (0,   0),
+        "Five Below (Year 3 target)": (2,   4),
+    }
+    comp_df["x_plot"] = comp_df.apply(lambda r: r["catalog_completeness"] + jitter_map.get(r["retailer"], (0,0))[0], axis=1)
+    comp_df["y_plot"] = comp_df.apply(lambda r: r["ucp_score"]            + jitter_map.get(r["retailer"], (0,0))[1], axis=1)
+
+    # Text positions per retailer to avoid overlap
+    tpos_map = {
+        "Walmart":                    "top right",
+        "Target":                     "bottom right",
+        "Dollar Tree":                "top left",
+        "Dollar General":             "top center",
+        "Five Below (current)":       "bottom center",
+        "Five Below (Year 3 target)": "top center",
+    }
+
+    fig_comp = go.Figure()
+    color_map = {"Live on UCP": "#10b981", "Not started": "#ef4444",
+                 "Evaluating": "#f59e0b", "Target": "#3b82f6"}
+    size_map  = {"Live on UCP": 36, "Not started": 22, "Evaluating": 24, "Target": 28}
+
+    for _, row in comp_df.iterrows():
+        fig_comp.add_trace(go.Scatter(
+            x=[row["x_plot"]],
+            y=[row["y_plot"]],
+            mode="markers+text",
+            marker=dict(
+                size=size_map.get(row["status"], 24),
+                color=color_map.get(row["status"], "#94a3b8"),
+                opacity=0.88,
+                line=dict(color="white", width=2),
+            ),
+            text=[row["retailer"]],
+            textposition=tpos_map.get(row["retailer"], "top center"),
+            textfont=dict(size=11, color="#1e293b"),
+            name=row["status"],
+            hovertemplate=(
+                f"<b>{row['retailer']}</b><br>"
+                f"UCP Score: {row['ucp_score']}<br>"
+                f"Catalog: {row['catalog_completeness']}%<br>"
+                f"Status: {row['status']}<br>"
+                f"{row['notes']}<extra></extra>"
+            ),
+            showlegend=True,
+            legendgroup=row["status"],
+        ))
+
+    fig_comp.add_hline(y=85, line_dash="dot", line_color="#94a3b8", line_width=1.5,
+                       annotation_text="UCP Ready (85)", annotation_position="top right",
+                       annotation_font=dict(size=10, color="#64748b"))
+    fig_comp.add_vline(x=95, line_dash="dot", line_color="#94a3b8", line_width=1.5,
+                       annotation_text="Catalog target (95%)", annotation_position="top right",
+                       annotation_font=dict(size=10, color="#64748b"))
+
     fig_comp.update_layout(
+        title="UCP Score vs. Catalog Completeness by Retailer",
         plot_bgcolor="white", paper_bgcolor="white",
         font_color="#1e293b",
-        xaxis=dict(range=[0, 105]),
-        yaxis=dict(range=[0, 105]),
+        xaxis=dict(title="Catalog Completeness (%)", range=[0, 110],
+                   showgrid=True, gridcolor="#f1f5f9"),
+        yaxis=dict(title="UCP Readiness Score", range=[0, 110],
+                   showgrid=True, gridcolor="#f1f5f9"),
+        height=460,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.22, xanchor="center", x=0.5,
+                    title_text="Status: "),
+        margin=dict(l=60, r=40, t=50, b=80),
     )
-    fig_comp.add_hline(y=85, line_dash="dot", line_color="#94a3b8",
-                       annotation_text="UCP Ready threshold (85)", annotation_position="right")
-    fig_comp.add_vline(x=95, line_dash="dot", line_color="#94a3b8",
-                       annotation_text="Catalog target (95%)", annotation_position="top")
     st.plotly_chart(fig_comp, use_container_width=True)
 
     st.divider()

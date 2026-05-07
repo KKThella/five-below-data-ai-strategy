@@ -9,6 +9,22 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+/* Hide Streamlit's auto-generated file-based nav */
+[data-testid="stSidebarNav"] { display: none !important; }
+
+/* Sidebar branding */
+[data-testid="stSidebar"] { background: #0f172a; }
+[data-testid="stSidebar"] * { color: #e2e8f0 !important; }
+[data-testid="stSidebar"] hr { border-color: #1e293b !important; }
+[data-testid="stSidebar"] a { color: #93c5fd !important; }
+.sidebar-brand { font-size:20px; font-weight:800; color:#ffffff !important;
+                 letter-spacing:-0.5px; margin-bottom:2px; }
+.sidebar-sub   { font-size:11px; color:#64748b !important; text-transform:uppercase;
+                 letter-spacing:0.08em; margin-bottom:16px; }
+.nav-label     { font-size:10px; font-weight:700; color:#475569 !important;
+                 text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
+
+/* Main content */
 .hero-title   { font-size:42px; font-weight:800; color:#1e293b; line-height:1.15; margin-bottom:8px; }
 .hero-sub     { font-size:18px; color:#475569; margin-bottom:32px; }
 .year-card    { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px 24px; height:100%; }
@@ -33,16 +49,19 @@ st.markdown("""
 
 # ── SIDEBAR ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 🛒 Five Below")
-    st.markdown("**Data & AI Strategy**")
+    st.markdown('<div class="sidebar-brand">🛒 Five Below</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-sub">Data &amp; AI Strategy</div>', unsafe_allow_html=True)
     st.divider()
-    st.markdown("**Navigate to a tool:**")
-    st.page_link("pages/1_🤖_AI_Prioritization.py",       label="🤖 AI Use Case Prioritization", icon=None)
-    st.page_link("pages/2_🏛️_Data_Quality_Dashboard.py",  label="🏛️ Data Quality Dashboard",    icon=None)
-    st.page_link("pages/3_🛍️_UCP_Scorecard.py",           label="🛍️ UCP Readiness Scorecard",   icon=None)
+    st.markdown('<div class="nav-label">Tools</div>', unsafe_allow_html=True)
+    st.page_link("app.py",                                  label="🏠  Home & Strategy Overview")
+    st.page_link("pages/1_🤖_AI_Prioritization.py",        label="🤖  AI Use Case Prioritization")
+    st.page_link("pages/2_🏛️_Data_Quality_Dashboard.py",   label="🏛️  Data Quality Dashboard")
+    st.page_link("pages/3_🛍️_UCP_Scorecard.py",            label="🛍️  UCP Readiness Scorecard")
     st.divider()
-    st.caption("Built by Kiran Thella · AI PM")
-    st.markdown("[LinkedIn](https://www.linkedin.com/in/kiranthella/) · [GitHub](https://github.com/KKThella)")
+    st.markdown('<div class="nav-label">About</div>', unsafe_allow_html=True)
+    st.markdown("**Kiran Thella**  \nAI Product Manager  \n13+ yrs · Nike · Gilead · eBay")
+    st.markdown("")
+    st.markdown("[🔗 LinkedIn](https://www.linkedin.com/in/kiranthella/)   [💻 GitHub](https://github.com/KKThella)")
 
 # ── HERO ──────────────────────────────────────────────────────────────────────
 st.markdown('<div class="hero-title">Five Below — Data & AI Strategy</div>', unsafe_allow_html=True)

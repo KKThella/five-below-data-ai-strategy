@@ -6,14 +6,38 @@ import json
 import io
 from datetime import datetime
 
-# ── PAGE CONFIG ──────────────────────────────────────────────────────────────
-st.set_page_config(
-    page_title="Retail AI Use Case Prioritization",
-    page_icon="🛒",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
 
+# ── SHARED SIDEBAR (injected on every page) ───────────────────────────────────
+st.markdown("""
+<style>
+[data-testid="stSidebarNav"] { display: none !important; }
+[data-testid="stSidebar"] { background: #0f172a; }
+[data-testid="stSidebar"] * { color: #e2e8f0 !important; }
+[data-testid="stSidebar"] hr { border-color: #1e293b !important; }
+[data-testid="stSidebar"] a { color: #93c5fd !important; }
+.sidebar-brand { font-size:20px; font-weight:800; color:#ffffff !important; letter-spacing:-0.5px; margin-bottom:2px; }
+.sidebar-sub   { font-size:11px; color:#64748b !important; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:16px; }
+.nav-label     { font-size:10px; font-weight:700; color:#475569 !important; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
+</style>
+""", unsafe_allow_html=True)
+
+with st.sidebar:
+    st.markdown('<div class="sidebar-brand">🛒 Five Below</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-sub">Data &amp; AI Strategy</div>', unsafe_allow_html=True)
+    st.divider()
+    st.markdown('<div class="nav-label">Tools</div>', unsafe_allow_html=True)
+    st.page_link("app.py",                                 label="🏠  Home & Strategy Overview")
+    st.page_link("pages/1_🤖_AI_Prioritization.py",       label="🤖  AI Use Case Prioritization")
+    st.page_link("pages/2_🏛️_Data_Quality_Dashboard.py",  label="🏛️  Data Quality Dashboard")
+    st.page_link("pages/3_🛍️_UCP_Scorecard.py",           label="🛍️  UCP Readiness Scorecard")
+    st.divider()
+    st.markdown('<div class="nav-label">About</div>', unsafe_allow_html=True)
+    st.markdown("**Kiran Thella**  \nAI Product Manager  \n13+ yrs · Nike · Gilead · eBay")
+    st.markdown("")
+    st.markdown("[🔗 LinkedIn](https://www.linkedin.com/in/kiranthella/)   [💻 GitHub](https://github.com/KKThella)")
+
+
+# ── PAGE CONFIG ──────────────────────────────────────────────────────────────
 # ── STYLES ───────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -280,16 +304,13 @@ with tab2:
             fig2.add_trace(go.Scatter(
                 x=[row["Effort"]],
                 y=[row["Impact"]],
-                mode="markers+text",
+                mode="markers",
                 marker=dict(
                     size=row["Total Score"] * 3.5,
                     color=domain_colors.get(domain, "#94a3b8"),
                     opacity=0.8,
                     line=dict(color="white", width=2)
                 ),
-                text=[row["Use Case"]],
-                textposition="top center",
-                textfont=dict(size=10),
                 name=domain,
                 hovertemplate=(
                     f"<b>{row['Use Case']}</b><br>"
@@ -330,6 +351,13 @@ with tab2:
         margin=dict(l=60, r=20, t=20, b=80),
     )
     st.plotly_chart(fig2, use_container_width=True)
+
+    # Reference table so bubbles are identifiable without labels
+    st.caption("💡 Hover over any bubble to see details. Use the table below as a quick reference.")
+    ref_cols = ["Use Case", "Domain", "Impact", "Effort", "Total Score", "Tier"]
+    ref_df = df_all[ref_cols].sort_values("Total Score", ascending=False).reset_index(drop=True)
+    ref_df.index += 1
+    st.dataframe(ref_df, use_container_width=True)
 
     # ── Domain breakdown bar chart
     st.markdown('<div class="section-header">Average Priority Score by Domain</div>', unsafe_allow_html=True)
